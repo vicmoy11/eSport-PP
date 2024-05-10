@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-
+import { NgOptimizedImage } from '@angular/common'
 import { AccountService } from './_services';
 import { Account, Role } from './_models';
 
@@ -16,12 +16,5 @@ export class AppComponent {
     logout() {
         this.accountService.logout();
     }
-    toggleDarkMode() {
-        this.darkMode =!this.darkMode;
-        if (this.darkMode) {
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-      }
+    
 }

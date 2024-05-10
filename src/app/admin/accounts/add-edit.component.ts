@@ -13,6 +13,8 @@ export class AddEditComponent implements OnInit {
     isAddMode: boolean;
     loading = false;
     submitted = false;
+    account: any = {};
+    status: boolean;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -32,6 +34,7 @@ export class AddEditComponent implements OnInit {
             lastName: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
             role: ['', Validators.required],
+            status: [true, Validators.required],
             password: ['', [Validators.minLength(6), this.isAddMode ? Validators.required : Validators.nullValidator]],
             confirmPassword: ['']
         }, {
@@ -41,7 +44,16 @@ export class AddEditComponent implements OnInit {
         if (!this.isAddMode) {
             this.accountService.getById(this.id)
                 .pipe(first())
-                .subscribe(x => this.form.patchValue(x));
+                .subscribe((x: { [key: string]: any; }) => {
+                    this.form.patchValue(x); // update the form value
+                    this.account = x;
+                    if (this.account && this.account.role === 'Admin') {
+                      const statusControl = this.form.get('status');
+                      if (statusControl) {
+                        statusControl.disable(); // disable the status field if the role is 'Admin'
+                      }
+                    }
+                  });
         }
     }
 
@@ -75,7 +87,7 @@ export class AddEditComponent implements OnInit {
                     this.alertService.success('Account created successfully', { keepAfterRouteChange: true });
                     this.router.navigate(['../'], { relativeTo: this.route });
                 },
-                error: error => {
+                error: (error: any) => {
                     this.alertService.error(error);
                     this.loading = false;
                 }
@@ -83,6 +95,10 @@ export class AddEditComponent implements OnInit {
     }
 
     private updateAccount() {
+        this.loading = true;
+
+        const formData = this.form.value;
+        formData.isActive = this.status;
         this.accountService.update(this.id, this.form.value)
             .pipe(first())
             .subscribe({
@@ -90,7 +106,7 @@ export class AddEditComponent implements OnInit {
                     this.alertService.success('Update successful', { keepAfterRouteChange: true });
                     this.router.navigate(['../../'], { relativeTo: this.route });
                 },
-                error: error => {
+                error: (error: any) => {
                     this.alertService.error(error);
                     this.loading = false;
                 }
